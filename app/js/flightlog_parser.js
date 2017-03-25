@@ -6,7 +6,8 @@ var FlightLogIndex,
     FIRMWARE_TYPE_BASEFLIGHT = 1,
     FIRMWARE_TYPE_CLEANFLIGHT = 2,
     FIRMWARE_TYPE_BETAFLIGHT = 3,
-    FIRMWARE_TYPE_INAV = 4;
+    FIRMWARE_TYPE_INAV = 4,
+    FIRMWARE_TYPE_KISSFC = 5;
 
 var FlightLogParser = function(logData) {
     //Private constants:
@@ -399,6 +400,13 @@ var FlightLogParser = function(logData) {
                         $('html').removeClass('isBF');
                         $('html').removeClass('isINAV');
                     break;
+                    case "KISSFC":
+                        that.sysConfig.firmwareType = FIRMWARE_TYPE_KISSFC;
+                        $('html').addClass('isBaseF');
+                        $('html').removeClass('isCF');
+                        $('html').removeClass('isBF');
+                        $('html').removeClass('isINAV');
+                    break;
                     default:
                         that.sysConfig.firmwareType = FIRMWARE_TYPE_BASEFLIGHT;
                         $('html').addClass('isBaseF');
@@ -500,7 +508,11 @@ var FlightLogParser = function(logData) {
             case "gyro_notch_cutoff":
                 if(that.sysConfig.firmwareType == FIRMWARE_TYPE_BETAFLIGHT && semver.gte(that.sysConfig.firmwareVersion, '3.0.1')) {
                     that.sysConfig[fieldName] = parseCommaSeparatedString(fieldValue);
-                } else {
+                }else if(that.sysConfig.firmwareType == FIRMWARE_TYPE_KISSFC) {
+                    that.sysConfig[fieldName] = parseCommaSeparatedString(fieldValue);
+                    /* KISSFC uses 2 values multiplied by 100 */
+                    for (i=0; i<2; i++) that.sysConfig[fieldName][i] = that.sysConfig[fieldName][i] / 100.0;
+                }else {
                     that.sysConfig[fieldName] = parseInt(fieldValue, 10) / 100.0;
                 }
             break;
